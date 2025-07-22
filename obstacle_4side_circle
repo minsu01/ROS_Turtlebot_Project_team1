@@ -10,8 +10,7 @@ class ObstacleCircleAvoider(Node):
 
         self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
         self.scan_sub = self.create_subscription(LaserScan, 'scan', self.scan_callback, 10)
-        
-        # ✅ 더 짧은 주기로 제어 루프 → 정밀도 향상
+
         self.timer = self.create_timer(0.05, self.control_loop)
 
         self.state = 'move'
@@ -36,9 +35,9 @@ class ObstacleCircleAvoider(Node):
         twist = Twist()
         elapsed = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
 
-        # 🔢 시간 계산 공식
-        quarter_turn_time = (math.pi / 2) / self.angular_speed          # 90도 회전 시간
-        circle_segment_time = quarter_turn_time + 0.1                   # 90도 원 궤적 + 보정
+        quarter_turn_time = (math.pi / 2) / self.angular_speed
+        # 🔧 약 3도 보정 (π/60 ≈ 0.052 rad) → 시간 보정치 약 0.26초
+        circle_segment_time = quarter_turn_time + 0.15 
 
         if self.state == 'move':
             twist.linear.x = self.linear_speed
@@ -65,7 +64,7 @@ class ObstacleCircleAvoider(Node):
         elif self.state == 'pause_stop1':
             twist.angular.z = 0.0
             twist.linear.x = 0.0
-            if elapsed > 2.0:
+            if elapsed > 1.5:
                 self.state = 'pause_right'
                 self.start_time = self.get_clock().now()
 
@@ -78,27 +77,14 @@ class ObstacleCircleAvoider(Node):
         elif self.state == 'pause_stop2':
             twist.angular.z = 0.0
             twist.linear.x = 0.0
-            if elapsed > 2.0:
+            if elapsed > 1.5:
                 self.circle_step += 1
                 if self.circle_step >= 4:
-                    self.state = 'stop_before_final_turn'
+                    self.state = 'stop'
+                    self.get_logger().info("✅ 원 그리기 완료 → 정지")
                 else:
                     self.state = f'circle_step_{self.circle_step}'
                 self.start_time = self.get_clock().now()
-
-        elif self.state == 'stop_before_final_turn':
-            twist.angular.z = 0.0
-            twist.linear.x = 0.0
-            if elapsed > 2.0:
-                self.state = 'final_left_turn'
-                self.start_time = self.get_clock().now()
-                self.get_logger().info("🌀 회피 종료 → 원점에서 왼쪽 90도 회전")
-
-        elif self.state == 'final_left_turn':
-            twist.angular.z = self.angular_speed
-            if elapsed > quarter_turn_time:
-                self.state = 'stop'
-                self.get_logger().info("✅ 최종 회전 완료 → 정지")
 
         elif self.state == 'stop':
             twist.angular.z = 0.0
