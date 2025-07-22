@@ -1,0 +1,121 @@
+import math
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from sensor_msgs.msg import LaserScan
+
+class ObstacleCircleAvoider(Node):
+    def __init__(self):
+        super().__init__('obstacle_circle_avoider')
+
+        self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.scan_sub = self.create_subscription(LaserScan, 'scan', self.scan_callback, 10)
+        
+        # ✅ 더 짧은 주기로 제어 루프 → 정밀도 향상
+        self.timer = self.create_timer(0.05, self.control_loop)
+
+        self.state = 'move'
+        self.start_time = self.get_clock().now()
+
+        self.linear_speed = 0.2
+        self.angular_speed = 0.2
+
+        self.closest = float('inf')
+        self.circle_step = 0
+
+    def scan_callback(self, msg):
+        front_ranges = msg.ranges[0:10] + msg.ranges[-10:]
+        self.closest = min(front_ranges)
+
+        if self.state == 'move' and self.closest < 0.5:
+            self.get_logger().info("🛑 장애물 감지 → 회피 시작")
+            self.state = 'turn_right'
+            self.start_time = self.get_clock().now()
+
+    def control_loop(self):
+        twist = Twist()
+        elapsed = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
+
+        # 🔢 시간 계산 공식
+        quarter_turn_time = (math.pi / 2) / self.angular_speed          # 90도 회전 시간
+        circle_segment_time = quarter_turn_time + 0.1                   # 90도 원 궤적 + 보정
+
+        if self.state == 'move':
+            twist.linear.x = self.linear_speed
+
+        elif self.state == 'turn_right':
+            twist.angular.z = -self.angular_speed
+            if elapsed > quarter_turn_time:
+                self.state = 'circle_step_0'
+                self.start_time = self.get_clock().now()
+
+        elif self.state.startswith('circle_step_'):
+            twist.linear.x = self.linear_speed
+            twist.angular.z = self.angular_speed
+            if elapsed > circle_segment_time:
+                self.state = 'pause_left'
+                self.start_time = self.get_clock().now()
+
+        elif self.state == 'pause_left':
+            twist.angular.z = self.angular_speed
+            if elapsed > quarter_turn_time:
+                self.state = 'pause_stop1'
+                self.start_time = self.get_clock().now()
+
+        elif self.state == 'pause_stop1':
+            twist.angular.z = 0.0
+            twist.linear.x = 0.0
+            if elapsed > 2.0:
+                self.state = 'pause_right'
+                self.start_time = self.get_clock().now()
+
+        elif self.state == 'pause_right':
+            twist.angular.z = -self.angular_speed
+            if elapsed > quarter_turn_time:
+                self.state = 'pause_stop2'
+                self.start_time = self.get_clock().now()
+
+        elif self.state == 'pause_stop2':
+            twist.angular.z = 0.0
+            twist.linear.x = 0.0
+            if elapsed > 2.0:
+                self.circle_step += 1
+                if self.circle_step >= 4:
+                    self.state = 'stop_before_final_turn'
+                else:
+                    self.state = f'circle_step_{self.circle_step}'
+                self.start_time = self.get_clock().now()
+
+        elif self.state == 'stop_before_final_turn':
+            twist.angular.z = 0.0
+            twist.linear.x = 0.0
+            if elapsed > 2.0:
+                self.state = 'final_left_turn'
+                self.start_time = self.get_clock().now()
+                self.get_logger().info("🌀 회피 종료 → 원점에서 왼쪽 90도 회전")
+
+        elif self.state == 'final_left_turn':
+            twist.angular.z = self.angular_speed
+            if elapsed > quarter_turn_time:
+                self.state = 'stop'
+                self.get_logger().info("✅ 최종 회전 완료 → 정지")
+
+        elif self.state == 'stop':
+            twist.angular.z = 0.0
+            twist.linear.x = 0.0
+
+        self.cmd_pub.publish(twist)
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = ObstacleCircleAvoider()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
