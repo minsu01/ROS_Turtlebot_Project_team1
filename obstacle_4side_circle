@@ -35,7 +35,7 @@ class ObstacleCircleAvoider(Node):
         elapsed = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
 
         quarter_turn_time = (math.pi / 2) / self.angular_speed
-        circle_segment_time = quarter_turn_time + 0.15
+        circle_segment_time = quarter_turn_time + 0.15  #각도 미세 조정!!
 
         if self.state == 'move':
             twist.linear.x = self.linear_speed
@@ -67,7 +67,7 @@ class ObstacleCircleAvoider(Node):
         elif self.state == 'pause_stop1':
             twist.angular.z = 0.0
             twist.linear.x = 0.0
-            if elapsed > 1.5:
+            if elapsed > 1.5: #물체쪽 바라보는 시간
                 self.state = 'pause_right'
                 self.start_time = self.get_clock().now()
 
@@ -80,7 +80,7 @@ class ObstacleCircleAvoider(Node):
         elif self.state == 'pause_stop2':
             twist.angular.z = 0.0
             twist.linear.x = 0.0
-            if elapsed > 1.5:
+            if elapsed > 1.5: #원위치 후 이동 시간
                 self.circle_step += 1
                 self.state = f'circle_step_{self.circle_step}'
                 self.start_time = self.get_clock().now()
