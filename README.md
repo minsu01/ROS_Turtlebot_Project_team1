@@ -1,5 +1,5 @@
-# 🚓🤖 무인 순찰 로봇 프로젝트
-<img width="300" height="300" alt="image" src="https://github.com/user-attachments/assets/a52e519d-5aaf-4b94-a946-9d774585a138" />
+# <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/a52e519d-5aaf-4b94-a946-9d774585a138" /> 무인 순찰 로봇 프로젝트
+
 
 
 ---
