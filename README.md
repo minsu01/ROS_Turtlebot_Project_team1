@@ -1,3 +1,6 @@
+ssh ubuntu@192.168.0.57
+ros2 launch turtlebot3_bringup robot.launch.py
+
 # 🐢 무인 순찰 로봇 프로젝트
 
 ---
