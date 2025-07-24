@@ -48,26 +48,35 @@ class ObstacleAvoiderAndTurner(Node):
             self.get_logger().error(f"이미지 변환 오류: {e}")
 
     def save_current_frame(self):
-        # 저장을 위해 잠시 대기하여 최신 프레임을 확보
-        time.sleep(0.2)
-        frame_to_save = None
-        with self.frame_lock:
-            if self.current_frame is not None:
-                frame_to_save = self.current_frame.copy()
+        # --- [수정된 부분] ---
+        # 0.5초 간격으로 사진을 두 번 찍습니다.
+        for i in range(2):
+            self.get_logger().info(f"📸 {i+1}번째 사진 촬영 시도...")
+            # 저장을 위해 잠시 대기하여 최신 프레임을 확보
+            time.sleep(0.2)
+            frame_to_save = None
+            with self.frame_lock:
+                if self.current_frame is not None:
+                    frame_to_save = self.current_frame.copy()
 
-        if frame_to_save is not None:
-            today_date_str = datetime.datetime.now().strftime("%y-%m-%d")
-            date_specific_dir = os.path.join(self.base_output_dir, today_date_str)
-            os.makedirs(date_specific_dir, exist_ok=True)
-            timestamp = datetime.datetime.now().strftime("%H-%M-%S-%f") # 밀리초까지 포함
-            filename = os.path.join(date_specific_dir, f"capture_{timestamp}.jpg")
-            try:
-                cv2.imwrite(filename, frame_to_save)
-                self.get_logger().info(f"이미지 저장됨: {filename}")
-            except Exception as e:
-                self.get_logger().error(f"이미지 저장 오류: {e}")
-        else:
-             self.get_logger().warn("현재 프레임 없음. 이미지 저장 건너뜀.")
+            if frame_to_save is not None:
+                today_date_str = datetime.datetime.now().strftime("%y-%m-%d")
+                date_specific_dir = os.path.join(self.base_output_dir, today_date_str)
+                os.makedirs(date_specific_dir, exist_ok=True)
+                timestamp = datetime.datetime.now().strftime("%H-%M-%S-%f") # 밀리초까지 포함
+                filename = os.path.join(date_specific_dir, f"capture_{timestamp}.jpg")
+                try:
+                    cv2.imwrite(filename, frame_to_save)
+                    self.get_logger().info(f"이미지 저장됨: {filename}")
+                except Exception as e:
+                    self.get_logger().error(f"이미지 저장 오류: {e}")
+            else:
+                 self.get_logger().warn("현재 프레임 없음. 이미지 저장 건너뜀.")
+
+            # 두 번째 촬영 전에 잠시 대기
+            if i == 0:
+                time.sleep(0.5)
+
 
     def scan_callback(self, msg):
         # 이 콜백은 더 이상 사용되지 않습니다.
@@ -82,9 +91,8 @@ class ObstacleAvoiderAndTurner(Node):
             if not self.rotation_sequence_started:
                 self.rotation_sequence_started = True
 
-                # --- [수정된 부분] ---
                 time.sleep(2)
-                self.get_logger().info("🛑 초기 상태 'stop' 확인. 첫 이미지를 캡처합니다.")
+                self.get_logger().info("🛑 초기 상태 'stop' 확인. 첫 이미지를 캡처합니다 (2장).")
                 self.save_current_frame() # 1. 초기 이미지 캡처
 
                 self.get_logger().info("정지 완료. 이제 회전 시퀀스를 시작합니다.")
@@ -93,7 +101,6 @@ class ObstacleAvoiderAndTurner(Node):
                 self.state = 'performing_rotation'
 
         elif self.state in ['move', 'performing_rotation', 'sequence_done']:
-            # 'move' 상태는 없으며, 다른 상태에서는 아무것도 하지 않음
             pass
 
     def rotate(self, angle_deg, speed_deg=45):
@@ -134,7 +141,7 @@ class ObstacleAvoiderAndTurner(Node):
             if i < 3:
                 self.get_logger().info("--- 추가 동작 시작 ---")
                 self.rotate(90)
-                self.get_logger().info(f"📸 {i+1}/4 구간의 90도 회전 후 이미지 캡처를 시도합니다.")
+                self.get_logger().info(f"📸 {i+1}/4 구간의 90도 회전 후 이미지 캡처를 시도합니다 (2장).")
                 self.save_current_frame()
                 self.get_logger().info("동작: 1초간 정지합니다.")
                 time.sleep(1)
