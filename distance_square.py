@@ -563,3 +563,9 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
+#ros2 service call /manual_stop_control std_srvs/srv/SetBool "data: true" 수동 정지 코드
+#ros2 service call /manual_stop_control std_srvs/srv/SetBool "data: false" 수동 재개 코드
+
+
+
