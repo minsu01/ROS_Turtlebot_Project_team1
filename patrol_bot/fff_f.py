@@ -791,3 +791,5 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+    #ros2 topic pub -1 /stop_signal std_msgs/msg/Empty '{}' --once 복귀 및 재개
+
