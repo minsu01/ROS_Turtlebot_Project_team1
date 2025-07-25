@@ -1,3 +1,4 @@
+#사각형 루트 빼고 직선루트만, 복귀 후 설정까지는 x 
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
