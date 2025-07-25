@@ -53,7 +53,7 @@ class PatrolRobotController(Node):
         # Patrol Parameters
         self.patrol_forward_speed = 0.3            # 직진 속도 (m/s)
         self.patrol_turn_speed = 0.4               # 회전 속도 (rad/s)
-        self.patrol_forward_length = 2.0           # 사각형의 한 변 길이 (미터)
+        self.patrol_forward_length = 1.5           # 사각형의 한 변 길이 (미터)
         self.patrol_yaw_tolerance = 0.01           # 목표 방향과의 허용 오차 (라디안)
         self.patrol_forward_correction_gain = 3.5  # 직진 중 방향 보정 게인
 
