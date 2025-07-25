@@ -29,7 +29,7 @@ class SquareMover(Node):
         # --- Patrol Parameters ---
         self.patrol_forward_speed = 0.2
         self.patrol_turn_speed = 0.4     # 회전 속도 (rad/s)
-        self.patrol_forward_length = 2.0 # 사각형의 한 변 길이 (미터)
+        self.patrol_forward_length = 0.5 # 사각형의 한 변 길이 (미터) - ⭐ MODIFIED TO 0.5 ⭐
         
         # ⭐ 90도 회전을 위한 회전 시간 설정 ⭐
         self.turn_duration_90_deg = (math.pi / 2) / self.patrol_turn_speed # 약 3.927초
