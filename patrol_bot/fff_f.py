@@ -1,4 +1,3 @@
- #최종 파일,사각형으로 돌다가 물체 인식시 접근, 캡쳐 후 물체 인식 풀고 정지, 재개 코드 사용시 복귀 후 본래 사각형 루트 도는 코드
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
@@ -75,7 +74,7 @@ class TurtlebotObjectAligner(Node):
 
         self.patrol_forward_speed = 0.3
         self.patrol_turn_speed = 0.4
-        self.patrol_forward_length = 2.0 # 한 변의 길이 (미터)
+        self.patrol_forward_length = 0.5 # 한 변의 길이 (미터)
         self.patrol_yaw_tolerance = 0.01 # 각도 허용 오차 (라디안)
         self.patrol_forward_correction_gain = 3.0 # 직진 경로 보정 게인
 
@@ -793,5 +792,3 @@ def main(args=None):
 if __name__ == '__main__':
     main()
     #ros2 topic pub -1 /stop_signal std_msgs/msg/Empty '{}' --once 복귀 및 재개
-    #최종 파일,사각형으로 돌다가 물체 인식시 접근, 캡쳐 후 물체 인식 풀고 정지, 재개 코드 사용시 복귀 후 본래 사각형 루트 도는 코드
-
