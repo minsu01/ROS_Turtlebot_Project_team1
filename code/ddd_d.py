@@ -1,3 +1,4 @@
+#fff_f.py 코드와 동일한데 각도보정을 3.0에서 0.5로 줄인 코드 경로 정확성 X
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
