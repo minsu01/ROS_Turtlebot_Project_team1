@@ -1,4 +1,4 @@
-#사각형으로 도는 코드
+#사각형으로 도는 코드 2m
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist, Point
