@@ -1,3 +1,4 @@
+#사각형 루트를 돌다가 장애물 발견시 레이더로 scan, 후 장애물을 원형으로 그리는 코드, 장애물 제거시 순찰 재개
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
